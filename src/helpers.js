@@ -5,7 +5,6 @@
 import Path from 'path'
 import FS from 'fs'
 import promisify from 'sb-promisify'
-import { capture } from 'sb-callsite'
 import type { Resolve$Config } from './types'
 
 const fsStat = promisify(FS.stat)
@@ -21,8 +20,7 @@ export function fillConfig(config: Object): Resolve$Config {
   } else if (Array.isArray(config.root)) {
     filled.root = config.root
   } else {
-    const callerDirectory = Path.resolve(Path.dirname(capture()[3].file))
-    filled.root = [callerDirectory]
+    filled.root = [Path.resolve('./')]
   }
   if (config.alias && typeof config.alias === 'object') {
     filled.alias = config.alias
