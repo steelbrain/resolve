@@ -5,7 +5,7 @@ dependencies:
     - sudo apt-get update
     - sudo apt-get -f install
     - nvm use 5.1.0
-    - npm run bootstrap
+    - npm install
     - npm run compile
 
 test:
