@@ -15,7 +15,9 @@ async function getDirectory(request: string, config: Resolve$Config): Promise {
   for (const root of config.root) {
     for (const moduleDirectory of config.moduleDirectories) {
       try {
-        const directoryPath = Path.join(root, moduleDirectory, moduleName)
+        const directoryPath = Path.isAbsolute(moduleDirectory) ?
+          Path.join(moduleDirectory, moduleName) :
+          Path.join(root, moduleDirectory, moduleName)
         await config.fs.stat(directoryPath)
         return [directoryPath].concat(chunks).join(Path.sep)
       } catch (_) { /* No-Op */ }
