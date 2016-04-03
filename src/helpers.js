@@ -72,7 +72,7 @@ export function getError(request: string): Error {
   const error = new Error(`Cannot find module '${request}'`)
   // $FlowIgnore: This is our custom property
   error.code = 'MODULE_NOT_FOUND'
-  throw error
+  return error
 }
 
 export async function resolveOnFileSystem(
@@ -116,7 +116,7 @@ export async function resolveOnFileSystem(
   for (const entry of config.extensions) {
     const filePath = request + entry
     try {
-      await config.fs.stat(request)
+      await config.fs.stat(filePath)
       return filePath
     } catch (_) { /* No-Op */ }
   }
