@@ -11,10 +11,10 @@ describe('resolve', function() {
     expect(await resolve('fs', modulesRoot, { alias: { fs: 'http' } })).toBe('http')
   })
   it('supports aliases for deep stuff', async function() {
-    const babelCorePath = await resolve('babel-core/package.json', __dirname, { root: modulesRoot })
+    const babelCorePath = await resolve('sb-promisify/package.json', __dirname, { root: modulesRoot })
     expect(await resolve('some-weird-dep/package.json', __dirname, {
       alias: {
-        'some-weird-dep': 'babel-core'
+        'some-weird-dep': 'sb-promisify'
       },
       root: modulesRoot
     })).toBe(babelCorePath)
