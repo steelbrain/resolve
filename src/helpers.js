@@ -44,8 +44,8 @@ export function fillConfig(config: Object): Resolve$Config {
   }
   if (config.fs && typeof config.fs === 'object') {
     filled.fs = {
-      stat: config.fs.stat && typeof config.fs.stat === 'object' ? config.fs.stat : fsStat,
-      readFile: config.fs.readFile && typeof config.fs.readFile === 'object' ? config.fs.readFile : fsReadFile
+      stat: config.fs.stat && typeof config.fs.stat === 'function' ? config.fs.stat : fsStat,
+      readFile: config.fs.readFile && typeof config.fs.readFile === 'function' ? config.fs.readFile : fsReadFile
     }
   } else {
     filled.fs = {
