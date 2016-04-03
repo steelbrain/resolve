@@ -4,7 +4,9 @@
   "description": "require.resolve algorithm implemented with awesome features",
   "main": "lib/index.js",
   "scripts": {
-    "test": "apm test"
+    "test": "apm test",
+    "lint": "eslint .",
+    "compile": "ucompiler go"
   },
   "repository": {
     "type": "git",
