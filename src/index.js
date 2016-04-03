@@ -11,7 +11,11 @@ async function getDirectory(request: string, config: Resolve$Config): Promise {
   if (!chunks.length) {
     throw Helpers.getError(request)
   }
-  const moduleName = chunks.shift()
+  let moduleName = chunks.shift()
+  if (config.alias[moduleName]) {
+    moduleName = config.alias[moduleName]
+  }
+
   for (const root of config.root) {
     for (const moduleDirectory of config.moduleDirectories) {
       try {
