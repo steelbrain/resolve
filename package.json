@@ -1,0 +1,33 @@
+{
+  "name": "sb-resolve",
+  "version": "0.0.0",
+  "description": "require.resolve algorithm implemented with awesome features",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "apm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/steelbrain/resolve.git"
+  },
+  "keywords": [
+    "require",
+    "node",
+    "algorithm"
+  ],
+  "author": "steelbrain",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/steelbrain/resolve/issues"
+  },
+  "homepage": "https://github.com/steelbrain/resolve#readme",
+  "devDependencies": {
+    "eslint": "^2.5.0",
+    "babel-eslint": "^6.0.0",
+    "babel-preset-steelbrain": "^2.0.1",
+    "eslint-config-airbnb": "^6.0.2",
+    "eslint-plugin-react": "^4.2.1",
+    "ucompiler": "^3.1.8",
+    "ucompiler-plugin-babel": "^3.1.1"
+  }
+}
