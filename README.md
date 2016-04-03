@@ -22,8 +22,10 @@ type $Options = {
   packageMains?: Array<string>,
   moduleDirectories?: Array<string>
 } = {
-  fs: promisify(FS.stat),
-  readFile: promisify(FS.readFile),
+  fs: {
+    stat: promisify(FS.stat),
+    readFile: promisify(FS.readFile),
+  },
   root: [path.resolve('./')],
   alias: {},
   extensions: ['.js', '.json'],
@@ -54,7 +56,7 @@ resolve('babel', __dirname).then(function(mainFile) {
 
 ## Notes
 
-This module does not keep looking for `moduleDirectories` upwards to give developers full control over the resolution, to add those directories, you must manually add those `node_modules` directories' absolute paths to `moduleDirectories` or add their parent folders in `root`
+To give developers full control over the resolution, this module does not keep looking for `moduleDirectories` upwards, to add those directories, you must manually add those `node_modules` directories' absolute paths to `moduleDirectories` or add their parent folders in `root`
 
 ## License
 This project is licensed under the terms of MIT License. See the LICENSE file for more info.
