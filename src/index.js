@@ -11,12 +11,13 @@ async function getDirectory(request: string, config: Resolve$Config): Promise {
   if (!chunks.length) {
     throw Helpers.getError(request)
   }
+  const moduleName = chunks.shift()
   for (const root of config.root) {
     for (const moduleDirectory of config.moduleDirectories) {
       try {
-        const directoryPath = Path.join(root, moduleDirectory, request)
+        const directoryPath = Path.join(root, moduleDirectory, moduleName)
         await config.fs.stat(directoryPath)
-        return directoryPath
+        return [directoryPath].concat(chunks).join(Path.sep)
       } catch (_) { /* No-Op */ }
     }
   }
@@ -32,9 +33,9 @@ async function resolve(request: string, requestDirectory: string, givenConfig: R
     return request
   }
   if (Helpers.isLocal(request)) {
-    return Helpers.resolveOnFileSystem(Path.resolve(requestDirectory, request), config)
+    return Helpers.resolveOnFileSystem(request, Path.resolve(requestDirectory, request), config)
   }
-  return Helpers.resolveOnFileSystem(await getDirectory(request, config), config)
+  return Helpers.resolveOnFileSystem(request, await getDirectory(request, config), config)
 }
 
 module.exports = resolve
