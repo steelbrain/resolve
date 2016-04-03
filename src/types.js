@@ -6,8 +6,8 @@ import type FS from 'fs'
 
 export type Resolve$Config = {
   fs: {
-    stat: Promise<FS.Stats>,
-    readFile: Promise<string>
+    stat: ((filePath: string) => Promise<FS.Stats>),
+    readFile: ((filePath: string) => Promise<string>)
   },
   root: Array<string>,
   alias: Object, // <string, string>
@@ -18,8 +18,8 @@ export type Resolve$Config = {
 
 export type Resolve$Config$User = {
   fs?: {
-    stat?: Promise<FS.Stats>,
-    readFile?: Promise<string>
+    stat?: ((filePath: string) => Promise<FS.Stats>),
+    readFile?: ((filePath: string) => Promise<string>)
   },
   root?: string | Array<string>,
   alias?: Object,
