@@ -38,6 +38,9 @@ async function resolve(request: string, requestDirectory: string, givenConfig: R
   if (Helpers.isCore(request)) {
     return request
   }
+  if (request.substr(0, 1) === '/') {
+    return Helpers.resolveOnFileSystem(request, request, config)
+  }
   if (Helpers.isLocal(request)) {
     return Helpers.resolveOnFileSystem(request, Path.resolve(requestDirectory, request), config)
   }
