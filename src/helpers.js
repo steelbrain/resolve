@@ -108,7 +108,6 @@ export async function resolveOnFileSystem(
           } catch (_) { /* No-Op */ }
         }
       }
-      throw getError(originalRequest)
     }
     return await resolveOnFileSystem(originalRequest, Path.resolve(request, './index'), config)
   }
