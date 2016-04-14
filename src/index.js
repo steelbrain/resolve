@@ -4,6 +4,7 @@
 
 import Path from 'path'
 import * as Helpers from './helpers'
+import { resolveOnFileSystem } from './resolver'
 import type { Resolve$Config, Resolve$Config$User } from './types'
 
 async function getDirectory(request: string, config: Resolve$Config): Promise {
@@ -39,12 +40,12 @@ async function resolve(request: string, requestDirectory: string, givenConfig: R
     return request
   }
   if (request.substr(0, 1) === '/') {
-    return Helpers.resolveOnFileSystem(request, request, config)
+    return resolveOnFileSystem(request, request, config)
   }
   if (Helpers.isLocal(request)) {
-    return Helpers.resolveOnFileSystem(request, Path.resolve(requestDirectory, request), config)
+    return resolveOnFileSystem(request, Path.resolve(requestDirectory, request), config)
   }
-  return Helpers.resolveOnFileSystem(request, await getDirectory(request, config), config)
+  return resolveOnFileSystem(request, await getDirectory(request, config), config)
 }
 
 module.exports = resolve
