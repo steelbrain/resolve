@@ -98,6 +98,19 @@ export async function find(config: Resolve$Config, directory: string, name: stri
   return null
 }
 
+export function isComplicatedLocal(config: Resolve$Config, request: string, moduleRoot: string): boolean {
+  const chunks = request.split(Path.sep)
+  let i = chunks.length
+  while (i--) {
+    const currentChunk = chunks[i]
+    if (config.moduleDirectories.indexOf(currentChunk) !== -1) {
+      break
+    }
+  }
+  const joined = chunks.slice(0, i).join(Path.sep)
+  return joined === moduleRoot
+}
+
 export function isLocal(request: string): boolean {
   return REGEX_LOCAL.test(request)
 }
