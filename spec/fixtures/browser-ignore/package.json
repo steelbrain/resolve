@@ -1,0 +1,6 @@
+{
+  "main": "./wow",
+  "browser": {
+    "./wow.js": false
+  }
+}

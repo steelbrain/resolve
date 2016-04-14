@@ -28,7 +28,7 @@ export function fillConfig(config: Object): Resolve$Config {
     filled.alias = {}
   }
   if (Array.isArray(config.extensions)) {
-    filled.extensions = config.extensions
+    filled.extensions = config.extensions.slice()
   } else {
     filled.extensions = ['.js', '.json']
   }
@@ -53,6 +53,8 @@ export function fillConfig(config: Object): Resolve$Config {
       readFile: fsReadFile
     }
   }
+
+  filled.extensions.push('')
   return filled
 }
 

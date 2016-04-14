@@ -40,6 +40,23 @@ describe('Resolver', function() {
     it('resolves local references properly', async function() {
       expect(await Resolver.resolve(defaultConfig, './helpers', Path.join(__dirname, './helpers'))).toBe(require.resolve('./helpers'))
     })
-    // TODO: A module with a manifest but no main
+    it('resolves modules with manifests but no mains', async function() {
+      const specDir = Path.join(__dirname, 'fixtures', 'manifest-no-main')
+      expect(await Resolver.resolve(defaultConfig, 'x', specDir)).toBe(
+        Path.join(specDir, 'index.json')
+      )
+    })
+    it('supports browser fields properly', async function() {
+      const specDir = Path.join(__dirname, 'fixtures', 'browser-alias')
+      expect(await Resolver.resolve(defaultConfig, 'x', specDir)).toBe(
+        Path.join(specDir, 'browser-main.js')
+      )
+    })
+    it('supports ignoring based on browser field', async function() {
+      const specDir = Path.join(__dirname, 'fixtures', 'browser-ignore')
+      expect(await Resolver.resolve(defaultConfig, 'x', specDir)).toBe(
+        require.resolve('../lib/_empty.js')
+      )
+    })
   })
 })

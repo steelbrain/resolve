@@ -3,7 +3,7 @@
 /* @flow */
 
 import Path from 'path'
-import { isLocal, exists, stat, find, getError } from './helpers'
+import { exists, stat, find, getError } from './helpers'
 import type { Resolve$Config } from './types'
 
 const EMPTY_MODULE = require.resolve('./_empty.js')
@@ -26,18 +26,30 @@ export async function resolve(config: Resolve$Config, displayName: string, reque
       }
     }
     if (parentManifestContents) {
-      const relativePath = (isLocal(displayName) ? './' : '') +  Path.relative(moduleRoot, request)
-      for (const entry of config.packageMains) {
-        const value = parentManifestContents[entry]
-        if (typeof value === 'object') {
-          if (value[relativePath] === false) {
-            request = EMPTY_MODULE
-            break
-          } else if (typeof value[relativePath] === 'string') {
-            request = value[relativePath]
-            break
+      const relativePath = (Path.dirname(request) === moduleRoot ? './' : '') +  Path.relative(moduleRoot, request)
+      const extensions = config.extensions
+      let breakItAll = false
+      for (const extension of extensions) {
+        for (const entry of config.packageMains) {
+          const value = parentManifestContents[entry]
+          const key = relativePath + extension
+          if (typeof value === 'object') {
+            if (value[key] === false) {
+              return EMPTY_MODULE
+            }
+            if (typeof value[key] === 'string') {
+              request = value[key]
+              breakItAll = true
+              break
+            }
           }
         }
+        if (breakItAll) {
+          break
+        }
+      }
+      if (breakItAll) {
+        request = Path.join(moduleRoot, request)
       }
     }
   }
