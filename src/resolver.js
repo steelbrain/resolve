@@ -17,8 +17,8 @@ function isComplicatedLocal(config: Resolve$Config, request: string, moduleRoot:
       break
     }
   }
-  const joined = chunks.join(Path.sep)
-  return joined.indexOf(moduleRoot) === 0
+  const joined = chunks.slice(0, i).join(Path.sep)
+  return joined === moduleRoot
 }
 
 export async function resolve(config: Resolve$Config, displayName: string, request: string, moduleRoot: ?string = null): Promise<string> {
