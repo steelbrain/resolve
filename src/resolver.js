@@ -8,6 +8,19 @@ import type { Resolve$Config } from './types'
 
 const EMPTY_MODULE = require.resolve('./_empty.js')
 
+function isComplicatedLocal(config: Resolve$Config, request: string, moduleRoot: string): boolean {
+  const chunks = request.split(Path.sep)
+  let i = chunks.length
+  while (i--) {
+    const currentChunk = chunks[i]
+    if (config.moduleDirectories.indexOf(currentChunk) !== -1) {
+      break
+    }
+  }
+  const joined = chunks.join(Path.sep)
+  return joined.indexOf(moduleRoot) === 0
+}
+
 export async function resolve(config: Resolve$Config, displayName: string, request: string, moduleRoot: ?string = null): Promise<string> {
   if (!moduleRoot) {
     moduleRoot = await find(config, Path.dirname(request), ['package.json'].concat(config.moduleDirectories))
@@ -26,30 +39,45 @@ export async function resolve(config: Resolve$Config, displayName: string, reque
       }
     }
     if (parentManifestContents) {
-      const relativePath = (Path.dirname(request) === moduleRoot ? './' : '') +  Path.relative(moduleRoot, request)
-      const extensions = config.extensions
-      let breakItAll = false
-      for (const extension of extensions) {
+      if (isComplicatedLocal(config, request, moduleRoot)) {
+        const relativePath = './' +  Path.relative(moduleRoot, request)
+        const extensions = config.extensions
+        let found = false
+        for (const extension of extensions) {
+          for (const entry of config.packageMains) {
+            const value = parentManifestContents[entry]
+            const key = relativePath + extension
+            if (typeof value === 'object') {
+              if (value[key] === false) {
+                return EMPTY_MODULE
+              }
+              if (typeof value[key] === 'string') {
+                request = value[key]
+                found = true
+                break
+              }
+            }
+          }
+          if (found) {
+            break
+          }
+        }
+        if (found) {
+          request = Path.join(moduleRoot, request)
+        }
+      } else {
         for (const entry of config.packageMains) {
           const value = parentManifestContents[entry]
-          const key = relativePath + extension
           if (typeof value === 'object') {
-            if (value[key] === false) {
+            if (value[request] === false) {
               return EMPTY_MODULE
             }
-            if (typeof value[key] === 'string') {
-              request = value[key]
-              breakItAll = true
+            if (typeof value[request] === 'string') {
+              request = value[request]
               break
             }
           }
         }
-        if (breakItAll) {
-          break
-        }
-      }
-      if (breakItAll) {
-        request = Path.join(moduleRoot, request)
       }
     }
   }

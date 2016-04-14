@@ -11,16 +11,6 @@ export function it(name, callback) {
     }
   })
 }
-export function fit(name, callback) {
-  global.fit(name, function() {
-    const value = callback()
-    if (value && value.constructor.name === 'Promise') {
-      waitsForPromise({ timeout: 10 * 1000 }, function() {
-        return value
-      })
-    }
-  })
-}
 
 // Jasmine 1.3.x has no sane way of resetting to native clocks, and since we're
 // gonna test promises and such, we're gonna need it
