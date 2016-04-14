@@ -56,6 +56,46 @@ export function fillConfig(config: Object): Resolve$Config {
   return filled
 }
 
+export function exists(config: Resolve$Config, path: string): Promise<boolean> {
+  return stat(config, path).then(function(result) {
+    return result !== null
+  })
+}
+
+export async function stat(config: Resolve$Config, path: string): Promise<?FS.Stats> {
+  try {
+    return await config.fs.stat(path)
+  } catch (_) {
+    return null
+  }
+}
+
+export async function find(config: Resolve$Config, directory: string, name: string | Array<string>, maxDepth: number = 3): Promise<?string> {
+  const names = [].concat(name)
+  const chunks = directory.split(Path.sep)
+  let depth = 0
+
+  while (chunks.length) {
+    depth++
+    let currentDir = chunks.join(Path.sep)
+    if (currentDir === '') {
+      currentDir = Path.resolve(directory, '/')
+    }
+    for (const entry of names) {
+      const filePath = Path.join(currentDir, entry)
+      if (await exists(config, filePath)) {
+        return filePath
+      }
+    }
+    chunks.pop()
+    if (depth >= maxDepth) {
+      break
+    }
+  }
+
+  return null
+}
+
 export function isLocal(request: string): boolean {
   return REGEX_LOCAL.test(request)
 }

@@ -4,7 +4,7 @@
 
 import Path from 'path'
 import * as Helpers from './helpers'
-import { resolveOnFileSystem } from './resolver'
+import { resolve as resolveOnFS } from './resolver'
 import type { Resolve$Config, Resolve$Config$User } from './types'
 
 async function getDirectory(request: string, config: Resolve$Config): Promise {
@@ -24,28 +24,29 @@ async function getDirectory(request: string, config: Resolve$Config): Promise {
           Path.join(moduleDirectory, moduleName) :
           Path.join(root, moduleDirectory, moduleName)
         await config.fs.stat(directoryPath)
-        return [directoryPath].concat(chunks).join(Path.sep)
+        return { requestPath: [directoryPath].concat(chunks).join(Path.sep), directoryPath }
       } catch (_) { /* No-Op */ }
     }
   }
   throw Helpers.getError(request)
 }
 
-async function resolve(request: string, requestDirectory: string, givenConfig: Resolve$Config$User = {}): Promise {
+async function resolve(request: string, requestDirectory: string, givenConfig: Resolve$Config$User = {}): Promise<string> {
   const config = Helpers.fillConfig(givenConfig)
-  if (config.alias[request]) {
+  if (typeof config.alias[request] === 'string') {
     request = config.alias[request]
   }
   if (Helpers.isCore(request)) {
     return request
   }
-  if (request.substr(0, 1) === '/') {
-    return resolveOnFileSystem(request, request, config)
+  if (Path.isAbsolute(request)) {
+    return resolveOnFS(config, request, request)
   }
   if (Helpers.isLocal(request)) {
-    return resolveOnFileSystem(request, Path.resolve(requestDirectory, request), config)
+    return resolveOnFS(config, request, Path.resolve(requestDirectory, request))
   }
-  return resolveOnFileSystem(request, await getDirectory(request, config), config)
+  const { requestPath, directoryPath } = await getDirectory(request, config)
+  return resolveOnFS(config, request, requestPath, Path.dirname(directoryPath))
 }
 
 module.exports = resolve
