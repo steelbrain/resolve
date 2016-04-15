@@ -1,6 +1,5 @@
 'use babel'
 
-import Path from 'path'
 import { it } from './helpers'
 import * as Helpers from '../lib/helpers'
 
@@ -73,34 +72,13 @@ describe('Helpers', function() {
     })
   })
 
-  describe('resolveOnFileSystem', function() {
-    it('rejects with a proper error', async function() {
-      try {
-        await Helpers.resolveOnFileSystem('test', __dirname, defaultConfig)
-        expect(false).toBe(true)
-      } catch (_) {
-        expect(_.code).toBe('MODULE_NOT_FOUND')
-        expect(_.message).toBe("Cannot find module 'test'")
-      }
-    })
-    it('resolves direct files properly', async function() {
-      expect(await Helpers.resolveOnFileSystem('x', __filename, defaultConfig)).toBe(__filename)
-    })
-    it('resolves modules with manifests properly', async function() {
-      const mainFile = Path.normalize(Path.join(__dirname, '..', 'lib', 'index.js'))
-      expect(await Helpers.resolveOnFileSystem('x', Path.dirname(__dirname), defaultConfig)).toBe(mainFile)
-    })
-    it('resolves modules with . or ./ in main properely', async function() {
-      const specDir = Path.join(__dirname, 'fixtures', 'dot-in-main')
-      expect(await Helpers.resolveOnFileSystem('x', specDir, defaultConfig)).toBe(
-        Path.join(specDir, 'index.js')
-      )
-    })
-    it('resolves modules without manifests', async function() {
-      const specDir = Path.join(__dirname, 'fixtures', 'no-manifest')
-      expect(await Helpers.resolveOnFileSystem('x', specDir, defaultConfig)).toBe(
-        Path.join(specDir, 'index.json')
-      )
+  describe('getComplicatedPackageRoot', function() {
+    it('returns null or string when the module is a local', function() {
+      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/www/lib')).toBe(null)
+      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/www/lib/asd')).toBe(null)
+      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/www/lib/asd/asd')).toBe(null)
+      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/node_modules/asd/lib')).toBe('/var/node_modules/asd')
+      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/node_modules/asd/lib/bin')).toBe('/var/node_modules/asd')
     })
   })
 })

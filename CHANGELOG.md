@@ -1,3 +1,7 @@
+#### 1.1.0
+
+- Support `browser` field in a fully spec compliant manner (Following spec at defunctzombie/package-browser-field-spec)
+
 #### 1.0.2
 
 - Accept absolute paths to module directories

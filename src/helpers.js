@@ -28,7 +28,7 @@ export function fillConfig(config: Object): Resolve$Config {
     filled.alias = {}
   }
   if (Array.isArray(config.extensions)) {
-    filled.extensions = config.extensions
+    filled.extensions = config.extensions.slice()
   } else {
     filled.extensions = ['.js', '.json']
   }
@@ -53,7 +53,64 @@ export function fillConfig(config: Object): Resolve$Config {
       readFile: fsReadFile
     }
   }
+
+  filled.extensions.push('')
   return filled
+}
+
+export function exists(config: Resolve$Config, path: string): Promise<boolean> {
+  return stat(config, path).then(function(result) {
+    return result !== null
+  })
+}
+
+export async function stat(config: Resolve$Config, path: string): Promise<?FS.Stats> {
+  try {
+    return await config.fs.stat(path)
+  } catch (_) {
+    return null
+  }
+}
+
+export async function find(config: Resolve$Config, directory: string, name: string | Array<string>, maxDepth: number = 3): Promise<?string> {
+  const names = [].concat(name)
+  const chunks = directory.split(Path.sep)
+  let depth = 0
+
+  while (chunks.length) {
+    depth++
+    let currentDir = chunks.join(Path.sep)
+    if (currentDir === '') {
+      currentDir = Path.resolve(directory, '/')
+    }
+    for (const entry of names) {
+      const filePath = Path.join(currentDir, entry)
+      if (await exists(config, filePath)) {
+        return filePath
+      }
+    }
+    chunks.pop()
+    if (depth >= maxDepth) {
+      break
+    }
+  }
+
+  return null
+}
+
+export function getComplicatedPackageRoot(config: Resolve$Config, request: string): ?string {
+  const chunks = request.split(Path.sep)
+  let i = chunks.length
+  while (--i) {
+    const currentChunk = chunks[i]
+    if (config.moduleDirectories.indexOf(currentChunk) !== -1) {
+      break
+    }
+  }
+  if (i === 0) {
+    return null
+  }
+  return chunks.slice(0, i + 2).join(Path.sep)
 }
 
 export function isLocal(request: string): boolean {
@@ -73,51 +130,4 @@ export function getError(request: string): Error {
   // $FlowIgnore: This is our custom property
   error.code = 'MODULE_NOT_FOUND'
   return error
-}
-
-export async function resolveOnFileSystem(
-  originalRequest: string,
-  request: string,
-  config: Resolve$Config
-): Promise<string> {
-  let stats
-  try {
-    stats = await config.fs.stat(request)
-  } catch (_) { /* No-Op */ }
-  if (stats) {
-    if (stats.isFile()) {
-      return request
-    }
-    if (!stats.isDirectory()) {
-      throw getError(originalRequest)
-    }
-    let manifestContents
-    try {
-      const manifestPath = Path.join(request, 'package.json')
-      manifestContents = JSON.parse(await config.fs.readFile(manifestPath))
-    } catch (_) { /* No-Op */ }
-    if (manifestContents) {
-      for (const entry of config.packageMains) {
-        let value = manifestContents[entry]
-        if (typeof value === 'string') {
-          if (value === '.' || value === './') {
-            value = './index'
-          }
-          try {
-            return await resolveOnFileSystem(originalRequest, Path.resolve(request, value), config)
-          } catch (_) { /* No-Op */ }
-        }
-      }
-    }
-    return await resolveOnFileSystem(originalRequest, Path.resolve(request, './index'), config)
-  }
-
-  for (const entry of config.extensions) {
-    const filePath = request + entry
-    try {
-      await config.fs.stat(filePath)
-      return filePath
-    } catch (_) { /* No-Op */ }
-  }
-  throw getError(originalRequest)
 }

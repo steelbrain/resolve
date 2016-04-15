@@ -1,0 +1,6 @@
+{
+  "main": "asd.js",
+  "browser": {
+    "test": false
+  }
+}
