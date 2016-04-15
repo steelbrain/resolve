@@ -3,7 +3,7 @@
 /* @flow */
 
 import Path from 'path'
-import { exists, stat, find, isComplicatedLocal, getError } from './helpers'
+import { exists, stat, find, getComplicatedPackageRoot, getError } from './helpers'
 import type { Resolve$Config } from './types'
 
 const EMPTY_MODULE = require.resolve('./_empty.js')
@@ -43,7 +43,8 @@ export async function applyFilters(config: Resolve$Config, request: string, modu
   if (!parentManifestContents) {
     return request
   }
-  if (isComplicatedLocal(config, request, moduleRoot)) {
+  const packageRoot = getComplicatedPackageRoot(config, request)
+  if (!packageRoot || packageRoot === moduleRoot) {
     const relativePath = './' +  Path.relative(moduleRoot, request)
     const extensions = config.extensions
     for (const extension of extensions) {
@@ -62,14 +63,15 @@ export async function applyFilters(config: Resolve$Config, request: string, modu
     }
     return request
   }
+  const moduleName = Path.basename(packageRoot)
   for (const entry of config.packageMains) {
     const value = parentManifestContents[entry]
     if (typeof value === 'object') {
-      if (value[request] === false) {
+      if (value[moduleName] === false) {
         return EMPTY_MODULE
       }
-      if (typeof value[request] === 'string') {
-        return value[request]
+      if (typeof value[moduleName] === 'string') {
+        return value[moduleName]
       }
     }
   }

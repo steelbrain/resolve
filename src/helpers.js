@@ -98,17 +98,19 @@ export async function find(config: Resolve$Config, directory: string, name: stri
   return null
 }
 
-export function isComplicatedLocal(config: Resolve$Config, request: string, moduleRoot: string): boolean {
+export function getComplicatedPackageRoot(config: Resolve$Config, request: string): ?string {
   const chunks = request.split(Path.sep)
   let i = chunks.length
-  while (i--) {
+  while (--i) {
     const currentChunk = chunks[i]
     if (config.moduleDirectories.indexOf(currentChunk) !== -1) {
       break
     }
   }
-  const joined = chunks.slice(0, i).join(Path.sep)
-  return joined === moduleRoot
+  if (i === 0) {
+    return null
+  }
+  return chunks.slice(0, i + 2).join(Path.sep)
 }
 
 export function isLocal(request: string): boolean {

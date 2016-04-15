@@ -58,9 +58,11 @@ describe('Resolver', function() {
         require.resolve('../lib/_empty.js')
       )
     })
+  })
+  describe('bug', function() {
     it('supports applying these rules on a deep dependency', async function() {
       const specDir = Path.join(__dirname, 'fixtures', 'browser-deep')
-      expect(await Resolver.resolve(defaultConfig, 'test', 'test', specDir)).toBe(
+      expect(await Resolver.resolve(defaultConfig, 'test', Path.join(specDir, 'node_modules', 'test'), specDir)).toBe(
         require.resolve('../lib/_empty.js')
       )
     })

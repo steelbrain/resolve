@@ -4,6 +4,8 @@ import { it } from './helpers'
 import * as Helpers from '../lib/helpers'
 
 describe('Helpers', function() {
+  const defaultConfig = Helpers.fillConfig({})
+
   describe('fillConfig', function() {
     it('fills empty config', function() {
       const config = Helpers.fillConfig({})
@@ -67,6 +69,16 @@ describe('Helpers', function() {
       const error = Helpers.getError('test')
       expect(error.code).toBe('MODULE_NOT_FOUND')
       expect(error.message).toBe("Cannot find module 'test'")
+    })
+  })
+
+  describe('getComplicatedPackageRoot', function() {
+    it('returns null or string when the module is a local', function() {
+      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/www/lib')).toBe(null)
+      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/www/lib/asd')).toBe(null)
+      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/www/lib/asd/asd')).toBe(null)
+      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/node_modules/asd/lib')).toBe('/var/node_modules/asd')
+      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/node_modules/asd/lib/bin')).toBe('/var/node_modules/asd')
     })
   })
 })
