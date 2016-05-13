@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/steelbrain/resolve#readme",
   "devDependencies": {
-    "eslint": "^2.5.0",
+    "eslint": "^2.10.0",
     "babel-eslint": "^6.0.0",
     "babel-preset-steelbrain": "^2.0.1",
     "eslint-config-airbnb": "^6.0.2",
