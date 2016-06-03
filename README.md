@@ -16,20 +16,18 @@ type $Options = {
     stat?: ((filePath: string) => Promise<FS.Stats>),
     readFile?: ((filePath: string) => Promise<string>)
   },
-  root?: string | Array<string>,
-  alias?: Object, // Example: {react: 'preact-compat'}
+  root?: string,
+  process?: ((manifest: Object) => string),
   extensions?: Array<string>,
-  packageMains?: Array<string>,
   moduleDirectories?: Array<string>
 } = {
   fs: {
     stat: promisify(FS.stat),
     readFile: promisify(FS.readFile),
   },
-  root: [path.resolve('./')],
-  alias: {},
+  root: path.resolve('./'),
+  process: manifest => manifest.main || './index'
   extensions: ['.js', '.json'],
-  packageMains: ['browser', 'main'],
   moduleDirectories: ['node_modules']
 }
 
@@ -37,19 +35,21 @@ function isLocal(request: string): boolean
 function isCore(request: string): boolean
 function resolve(request: string, requestDirectory: string, options: $Options): Promise<string>
 
-export { isLocal, isCore }
-export default resolve
+export { isLocal, isCore, resolve }
 ```
 
 ## Examples
 
 ```js
-import resolve, { isCore } from 'sb-resolve'
+// /tmp/test/lib/index.js
+import { resolve, isCore } from 'sb-resolve'
 
 console.log(isCore('fs')) // true
 console.log(isCore('babel')) // false
 
-resolve('babel', __dirname).then(function(mainFile) {
+resolve('babel', __filename, {
+  root: Path.join(__dirname, '..'),
+}).then(function(mainFile) {
   console.log(mainFile) // /tmp/test/node_modules/babel/index.js
 })
 ```

@@ -3,52 +3,130 @@
 /* @flow */
 
 import Path from 'path'
-import * as Helpers from './helpers'
-import { resolve as resolveOnFS } from './resolver'
-import type { Resolve$Config, Resolve$Config$User } from './types'
+import { capture as captureStack } from 'sb-callsite'
+import { fillConfig, isCore, isLocal, statItem, getError, getChunks, getLocalPackageRoot } from './helpers'
+import type { Config } from './types'
 
-async function getDirectory(request: string, config: Resolve$Config): Promise {
-  const chunks = Helpers.getChunks(request)
-  if (!chunks.length) {
-    throw Helpers.getError(request)
-  }
-  let moduleName = chunks.shift()
-  if (config.alias[moduleName]) {
-    moduleName = config.alias[moduleName]
-  }
+export { isCore, isLocal }
 
-  for (const root of config.root) {
-    for (const moduleDirectory of config.moduleDirectories) {
-      try {
-        const directoryPath = Path.isAbsolute(moduleDirectory) ?
-          Path.join(moduleDirectory, moduleName) :
-          Path.join(root, moduleDirectory, moduleName)
-        await config.fs.stat(directoryPath)
-        return { requestPath: [directoryPath].concat(chunks).join(Path.sep), directoryPath }
-      } catch (_) { /* No-Op */ }
-    }
-  }
-  throw Helpers.getError(request)
-}
-
-async function resolve(request: string, requestDirectory: string, givenConfig: Resolve$Config$User = {}): Promise<string> {
-  const config = Helpers.fillConfig(givenConfig)
-  if (typeof config.alias[request] === 'string') {
-    request = config.alias[request]
-  }
-  if (Helpers.isCore(request)) {
+async function resolveAsFile(request: string, config: Config): Promise<?string> {
+  // Check existence by adding extensions
+  if (config.extensions.indexOf(Path.extname(request)) !== -1 && await statItem(request, config)) {
     return request
   }
-  if (Path.isAbsolute(request)) {
-    return resolveOnFS(config, request, request)
+  for (const extension of config.extensions) {
+    const newPath = request + extension
+    if (await statItem(newPath, config)) {
+      return newPath
+    }
   }
-  if (Helpers.isLocal(request)) {
-    return resolveOnFS(config, request, Path.resolve(requestDirectory, request))
-  }
-  const { requestPath, directoryPath } = await getDirectory(request, config)
-  return resolveOnFS(config, request, requestPath, Path.dirname(directoryPath))
+  return null
 }
 
-module.exports = resolve
-module.exports.isLocal = Helpers.isLocal
-module.exports.isCore = Helpers.isCore
+async function resolveAsDirectory(request: string, parent: string, config: Config, givenRequest: string): Promise<string> {
+  let manifest = {}
+  try {
+    manifest = JSON.parse(await config.fs.readFile(Path.join(request, 'package.json')))
+  } catch (_) { /* No Op */ }
+  let givenMainFile = config.process(manifest, request)
+  givenMainFile = Path.normalize(givenMainFile) + (givenMainFile.substr(0, 1) === '/' ? '/' : '')
+  if (givenMainFile === '.' || givenMainFile === '.\\' || givenMainFile === './') {
+    givenMainFile = './index'
+  }
+  const mainFile = Path.isAbsolute(givenMainFile) ? givenMainFile : Path.resolve(request, givenMainFile)
+  const stat = await statItem(mainFile, config)
+  // $/ should be treated as a dir first
+  if (stat && givenMainFile.substr(-1) === '/') {
+    // Disallow requiring a file as a directory
+    if (!stat.isDirectory()) {
+      throw getError(givenRequest, parent, config)
+    }
+    return await resolveAsDirectory(mainFile, parent, config)
+  }
+  // Use the request if it's a file and has a valid known extension
+  if (stat && stat.isFile() && config.extensions.indexOf(Path.extname(request)) !== -1) {
+    return mainFile
+  }
+  return (
+    await resolveAsFile(mainFile, config) ||
+    (stat && await resolveAsDirectory(mainFile, parent, config, givenRequest))
+  )
+}
+
+async function resolveModulePath(request: string, parent: string, config: Config): Promise<string> {
+  const chunks = getChunks(request)
+  const moduleName = chunks.shift()
+  const packageRoots = []
+
+  const localRoot = getLocalPackageRoot(Path.dirname(parent), config)
+  if (localRoot) {
+    packageRoots.push(localRoot)
+  }
+  if (typeof config.root === 'string') {
+    packageRoots.push(config.root)
+  }
+
+  const absoluteModuleDirectories = config.moduleDirectories.filter(i => Path.isAbsolute(i))
+  const relativeModuleDirectories = config.moduleDirectories.filter(i => !Path.isAbsolute(i))
+
+  for (const moduleDirectory of absoluteModuleDirectories) {
+    const path = Path.join(moduleDirectory, moduleName)
+    if (await statItem(path, config)) {
+      return Path.join(path, chunks.join(''))
+    }
+  }
+  for (const root of packageRoots) {
+    for (const moduleDirectory of relativeModuleDirectories) {
+      const path = Path.join(root, moduleDirectory, moduleName)
+      if (await statItem(path, config)) {
+        return Path.join(path, chunks.join(''))
+      }
+    }
+  }
+  throw getError(request, parent, config)
+}
+
+export async function resolve(givenRequest: string, parent: ?string, config: ?Config): Promise<string> {
+  if (!parent) {
+    const stack = captureStack()
+    if (stack[1].file !== __filename) {
+      parent = stack[1].file
+    } else if (stack[2].file !== __filename) {
+      parent = stack[2].file
+    } else if (stack[3].file !== __filename) {
+      parent = stack[3].file
+    } else if (stack[4].file !== __filename) {
+      parent = stack[4].file
+    }
+  }
+  let request = Path.normalize(givenRequest)
+  config = fillConfig(config || {})
+  if (isLocal(request)) {
+    // Convert ./test to $/test
+    request = Path.resolve(Path.dirname(parent), request)
+  } else if (!Path.isAbsolute(request)) {
+    // Convert sb-promise to $/node_modules/sb-promise
+    request = await resolveModulePath(request, parent, config)
+  }
+  const stat = await statItem(request, config)
+  // $/ should be treated as a dir first
+  if (stat && givenRequest.substr(-1) === '/') {
+    // Disallow requiring a file as a directory
+    if (!stat.isDirectory()) {
+      throw getError(givenRequest, parent, config)
+    }
+    return await resolveAsDirectory(request, parent, config)
+  }
+  // Use the request if it's a file and has a valid known extension
+  if (stat && stat.isFile() && config.extensions.indexOf(Path.extname(request)) !== -1) {
+    return request
+  }
+  const resolved = (
+    await resolveAsFile(request, config) ||
+    await resolveAsDirectory(request, parent, config, givenRequest)
+  )
+  if (!resolved) {
+    throw getError(givenRequest, parent, config)
+  }
+  return resolved
+}

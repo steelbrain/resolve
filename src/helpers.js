@@ -2,31 +2,23 @@
 
 /* @flow */
 
-import Path from 'path'
 import FS from 'fs'
+import Path from 'path'
 import promisify from 'sb-promisify'
-import type { Resolve$Config } from './types'
+import type { Config } from './types'
 
 const fsStat = promisify(FS.stat)
 const fsReadFile = promisify(FS.readFile)
 const REGEX_LOCAL = /^\.[\\\/]?/
-const REGEX_DEEP = /[\/\\]/
+const REGEX_DIR_SEPARATOR = /\/|\\/
 const CORE_MODULES = new Set(require('../vendor/core.json'))
 
-export function fillConfig(config: Object): Resolve$Config {
+function defaultManifestProcessor(manifest: Object /*, manifestDirectory: string */): string {
+  return manifest.main || './index'
+}
+
+export function fillConfig(config: Object): Config {
   const filled = {}
-  if (typeof config.root === 'string') {
-    filled.root = [config.root]
-  } else if (Array.isArray(config.root)) {
-    filled.root = config.root
-  } else {
-    filled.root = [Path.resolve('./')]
-  }
-  if (config.alias && typeof config.alias === 'object') {
-    filled.alias = config.alias
-  } else {
-    filled.alias = {}
-  }
   if (Array.isArray(config.extensions)) {
     filled.extensions = config.extensions.slice()
   } else {
@@ -42,6 +34,16 @@ export function fillConfig(config: Object): Resolve$Config {
   } else {
     filled.moduleDirectories = ['node_modules']
   }
+  if (typeof config.process === 'function') {
+    filled.process = config.process
+  } else {
+    filled.process = defaultManifestProcessor
+  }
+  if (typeof config.root === 'string') {
+    filled.root = Path.normalize(config.root)
+  } else {
+    filled.root = null
+  }
   if (config.fs && typeof config.fs === 'object') {
     filled.fs = {
       stat: config.fs.stat && typeof config.fs.stat === 'function' ? config.fs.stat : fsStat,
@@ -53,52 +55,42 @@ export function fillConfig(config: Object): Resolve$Config {
       readFile: fsReadFile
     }
   }
+  filled.items_searched = []
 
-  filled.extensions.push('')
   return filled
 }
 
-export function exists(config: Resolve$Config, path: string): Promise<boolean> {
-  return stat(config, path).then(function(result) {
-    return result !== null
-  })
-}
-
-export async function stat(config: Resolve$Config, path: string): Promise<?FS.Stats> {
+export async function statItem(path: string, config: Config): Promise<?FS.Stats> {
   try {
+    config.items_searched.push(path)
     return await config.fs.stat(path)
   } catch (_) {
     return null
   }
 }
 
-export async function find(config: Resolve$Config, directory: string, name: string | Array<string>, maxDepth: number = 3): Promise<?string> {
-  const names = [].concat(name)
-  const chunks = directory.split(Path.sep)
-  let depth = 0
-
-  while (chunks.length) {
-    depth++
-    let currentDir = chunks.join(Path.sep)
-    if (currentDir === '') {
-      currentDir = Path.resolve(directory, '/')
-    }
-    for (const entry of names) {
-      const filePath = Path.join(currentDir, entry)
-      if (await exists(config, filePath)) {
-        return filePath
-      }
-    }
-    chunks.pop()
-    if (depth >= maxDepth) {
-      break
-    }
-  }
-
-  return null
+export function isLocal(request: string): boolean {
+  return REGEX_LOCAL.test(request)
 }
 
-export function getComplicatedPackageRoot(config: Resolve$Config, request: string): ?string {
+export function isCore(request: string): boolean {
+  return CORE_MODULES.has(request)
+}
+
+export function getChunks(request: string): Array<string> {
+  return request.split(REGEX_DIR_SEPARATOR)
+}
+
+export function getError(request: string, parent: string, config: Config): Error {
+  const error = new Error(`Cannot find module '${request}'`)
+  // $FlowIgnore: This is our custom property
+  error.code = 'MODULE_NOT_FOUND'
+  error.stack = `${error.message}\n    at ${parent}:0:0`
+  error.items_searched = config.items_searched
+  return error
+}
+
+export function getLocalPackageRoot(request: string, config: Config): ?string {
   const chunks = request.split(Path.sep)
   let i = chunks.length
   while (--i) {
@@ -111,23 +103,4 @@ export function getComplicatedPackageRoot(config: Resolve$Config, request: strin
     return null
   }
   return chunks.slice(0, i + 2).join(Path.sep)
-}
-
-export function isLocal(request: string): boolean {
-  return REGEX_LOCAL.test(request)
-}
-
-export function isCore(request: string): boolean {
-  return CORE_MODULES.has(request)
-}
-
-export function getChunks(request: string): Array<string> {
-  return request.split(REGEX_DEEP)
-}
-
-export function getError(request: string): Error {
-  const error = new Error(`Cannot find module '${request}'`)
-  // $FlowIgnore: This is our custom property
-  error.code = 'MODULE_NOT_FOUND'
-  return error
 }

@@ -1,6 +1,6 @@
 'use babel'
 
-import { it } from './helpers'
+import { it } from 'jasmine-fix'
 import * as Helpers from '../lib/helpers'
 
 describe('Helpers', function() {
@@ -9,11 +9,11 @@ describe('Helpers', function() {
   describe('fillConfig', function() {
     it('fills empty config', function() {
       const config = Helpers.fillConfig({})
-      expect(Array.isArray(config.root)).toBe(true)
-      expect(config.root).toEqual([process.cwd()])
-      expect(config.alias).toEqual({})
+      expect(config.root).toBe(null)
       expect(Array.isArray(config.extensions)).toBe(true)
       expect(Array.isArray(config.packageMains)).toBe(true)
+      expect(Array.isArray(config.moduleDirectories)).toBe(true)
+      expect(typeof config.process).toBe('function')
       expect(typeof config.fs).toBe('object')
       expect(typeof config.fs.stat).toBe('function')
       expect(typeof config.fs.readFile).toBe('function')
@@ -66,19 +66,19 @@ describe('Helpers', function() {
 
   describe('getError', function() {
     it('returns a proper error', function() {
-      const error = Helpers.getError('test')
+      const error = Helpers.getError('test', 'parent', { items_searched: [] })
       expect(error.code).toBe('MODULE_NOT_FOUND')
       expect(error.message).toBe("Cannot find module 'test'")
     })
   })
 
-  describe('getComplicatedPackageRoot', function() {
+  describe('getLocalPackageRoot', function() {
     it('returns null or string when the module is a local', function() {
-      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/www/lib')).toBe(null)
-      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/www/lib/asd')).toBe(null)
-      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/www/lib/asd/asd')).toBe(null)
-      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/node_modules/asd/lib')).toBe('/var/node_modules/asd')
-      expect(Helpers.getComplicatedPackageRoot(defaultConfig, '/var/node_modules/asd/lib/bin')).toBe('/var/node_modules/asd')
+      expect(Helpers.getLocalPackageRoot('/var/www/lib', defaultConfig)).toBe(null)
+      expect(Helpers.getLocalPackageRoot('/var/www/lib/asd', defaultConfig)).toBe(null)
+      expect(Helpers.getLocalPackageRoot('/var/www/lib/asd/asd', defaultConfig)).toBe(null)
+      expect(Helpers.getLocalPackageRoot('/var/node_modules/asd/lib', defaultConfig)).toBe('/var/node_modules/asd')
+      expect(Helpers.getLocalPackageRoot('/var/node_modules/asd/lib/bin', defaultConfig)).toBe('/var/node_modules/asd')
     })
   })
 })

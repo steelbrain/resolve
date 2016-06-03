@@ -1,3 +1,11 @@
+#### 2.0.0
+
+- Remove `alias` config support
+- Remove `packageMains` config support
+- Add a `process` function in config
+- Change the signature of exports
+- Change parameter signature of resolve function
+
 #### 1.1.0
 
 - Support `browser` field in a fully spec compliant manner (Following spec at defunctzombie/package-browser-field-spec)
