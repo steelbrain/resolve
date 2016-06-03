@@ -10,7 +10,6 @@ export type Resolve$Config = {
     readFile: ((filePath: string) => Promise<string>)
   },
   root: Array<string>,
-  alias: Object, // <string, string>
   extensions: Array<string>,
   packageMains: Array<string>,
   moduleDirectories: Array<string>,
@@ -22,7 +21,6 @@ export type Resolve$Config$User = {
     readFile?: ((filePath: string) => Promise<string>)
   },
   root?: string | Array<string>,
-  alias?: Object,
   extensions?: Array<string>,
   packageMains?: Array<string>,
   moduleDirectories?: Array<string>

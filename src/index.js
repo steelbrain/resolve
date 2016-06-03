@@ -13,9 +13,6 @@ async function getDirectory(request: string, config: Resolve$Config): Promise {
     throw Helpers.getError(request)
   }
   let moduleName = chunks.shift()
-  if (config.alias[moduleName]) {
-    moduleName = config.alias[moduleName]
-  }
 
   for (const root of config.root) {
     for (const moduleDirectory of config.moduleDirectories) {
@@ -33,9 +30,6 @@ async function getDirectory(request: string, config: Resolve$Config): Promise {
 
 async function resolve(request: string, requestDirectory: string, givenConfig: Resolve$Config$User = {}): Promise<string> {
   const config = Helpers.fillConfig(givenConfig)
-  if (typeof config.alias[request] === 'string') {
-    request = config.alias[request]
-  }
   if (Helpers.isCore(request)) {
     return request
   }

@@ -1,3 +1,7 @@
+#### 2.0.0
+
+- Remove `alias` config support
+
 #### 1.1.0
 
 - Support `browser` field in a fully spec compliant manner (Following spec at defunctzombie/package-browser-field-spec)

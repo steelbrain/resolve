@@ -11,6 +11,7 @@ const fsStat = promisify(FS.stat)
 const fsReadFile = promisify(FS.readFile)
 const REGEX_LOCAL = /^\.[\\\/]?/
 const REGEX_DEEP = /[\/\\]/
+const REGEX_DIR_SEPARATOR = /\/|\\/
 const CORE_MODULES = new Set(require('../vendor/core.json'))
 
 export function fillConfig(config: Object): Resolve$Config {
@@ -21,11 +22,6 @@ export function fillConfig(config: Object): Resolve$Config {
     filled.root = config.root
   } else {
     filled.root = [Path.resolve('./')]
-  }
-  if (config.alias && typeof config.alias === 'object') {
-    filled.alias = config.alias
-  } else {
-    filled.alias = {}
   }
   if (Array.isArray(config.extensions)) {
     filled.extensions = config.extensions.slice()
@@ -58,18 +54,18 @@ export function fillConfig(config: Object): Resolve$Config {
   return filled
 }
 
-export function exists(config: Resolve$Config, path: string): Promise<boolean> {
-  return stat(config, path).then(function(result) {
-    return result !== null
-  })
-}
-
 export async function stat(config: Resolve$Config, path: string): Promise<?FS.Stats> {
   try {
     return await config.fs.stat(path)
   } catch (_) {
     return null
   }
+}
+
+export function exists(config: Resolve$Config, path: string): Promise<boolean> {
+  return stat(config, path).then(function(result) {
+    return result !== null
+  })
 }
 
 export async function find(config: Resolve$Config, directory: string, name: string | Array<string>, maxDepth: number = 3): Promise<?string> {
