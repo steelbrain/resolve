@@ -27,7 +27,7 @@ async function resolveAsDirectory(request: string, parent: string, config: Confi
   let manifest = {}
   try {
     manifest = JSON.parse(await config.fs.readFile(Path.join(request, 'package.json')))
-  } catch (_) {}
+  } catch (_) { /* No Op */ }
   const givenMainFile = config.process(manifest, request)
   let mainFile = Path.isAbsolute(givenMainFile) ? givenMainFile : Path.resolve(request, givenMainFile)
   const stat = await statItem(mainFile, config)
@@ -45,7 +45,7 @@ async function resolveAsDirectory(request: string, parent: string, config: Confi
   }
   return (
     await resolveAsFile(mainFile, config) ||
-    await resolveAsDirectory(request, parent, config, givenRequest)
+    (stat && await resolveAsDirectory(mainFile, parent, config, givenRequest))
   )
 }
 
