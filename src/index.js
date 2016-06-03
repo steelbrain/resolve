@@ -33,7 +33,7 @@ async function resolveAsDirectory(request: string, parent: string, config: Confi
   if (givenMainFile === '.' || givenMainFile === '.\\' || givenMainFile === './') {
     givenMainFile = './index'
   }
-  let mainFile = Path.isAbsolute(givenMainFile) ? givenMainFile : Path.resolve(request, givenMainFile)
+  const mainFile = Path.isAbsolute(givenMainFile) ? givenMainFile : Path.resolve(request, givenMainFile)
   const stat = await statItem(mainFile, config)
   // $/ should be treated as a dir first
   if (stat && givenMainFile.substr(-1) === '/') {

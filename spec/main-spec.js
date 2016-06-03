@@ -1,7 +1,7 @@
 'use babel'
 
 import Path from 'path'
-import { fit, it } from 'jasmine-fix'
+import { it } from 'jasmine-fix'
 import { resolve } from '../'
 
 describe('sb-resolve', function() {
