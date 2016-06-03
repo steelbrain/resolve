@@ -4,24 +4,12 @@
 
 import type FS from 'fs'
 
-export type Resolve$Config = {
+export type Config = {
   fs: {
     stat: ((filePath: string) => Promise<FS.Stats>),
     readFile: ((filePath: string) => Promise<string>)
   },
-  root: Array<string>,
   extensions: Array<string>,
   packageMains: Array<string>,
   moduleDirectories: Array<string>,
-}
-
-export type Resolve$Config$User = {
-  fs?: {
-    stat?: ((filePath: string) => Promise<FS.Stats>),
-    readFile?: ((filePath: string) => Promise<string>)
-  },
-  root?: string | Array<string>,
-  extensions?: Array<string>,
-  packageMains?: Array<string>,
-  moduleDirectories?: Array<string>
 }

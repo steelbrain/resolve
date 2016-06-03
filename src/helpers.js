@@ -16,13 +16,6 @@ const CORE_MODULES = new Set(require('../vendor/core.json'))
 
 export function fillConfig(config: Object): Resolve$Config {
   const filled = {}
-  if (typeof config.root === 'string') {
-    filled.root = [config.root]
-  } else if (Array.isArray(config.root)) {
-    filled.root = config.root
-  } else {
-    filled.root = [Path.resolve('./')]
-  }
   if (Array.isArray(config.extensions)) {
     filled.extensions = config.extensions.slice()
   } else {
@@ -50,7 +43,6 @@ export function fillConfig(config: Object): Resolve$Config {
     }
   }
 
-  filled.extensions.push('')
   return filled
 }
 
@@ -66,47 +58,6 @@ export function exists(config: Resolve$Config, path: string): Promise<boolean> {
   return stat(config, path).then(function(result) {
     return result !== null
   })
-}
-
-export async function find(config: Resolve$Config, directory: string, name: string | Array<string>, maxDepth: number = 3): Promise<?string> {
-  const names = [].concat(name)
-  const chunks = directory.split(Path.sep)
-  let depth = 0
-
-  while (chunks.length) {
-    depth++
-    let currentDir = chunks.join(Path.sep)
-    if (currentDir === '') {
-      currentDir = Path.resolve(directory, '/')
-    }
-    for (const entry of names) {
-      const filePath = Path.join(currentDir, entry)
-      if (await exists(config, filePath)) {
-        return filePath
-      }
-    }
-    chunks.pop()
-    if (depth >= maxDepth) {
-      break
-    }
-  }
-
-  return null
-}
-
-export function getComplicatedPackageRoot(config: Resolve$Config, request: string): ?string {
-  const chunks = request.split(Path.sep)
-  let i = chunks.length
-  while (--i) {
-    const currentChunk = chunks[i]
-    if (config.moduleDirectories.indexOf(currentChunk) !== -1) {
-      break
-    }
-  }
-  if (i === 0) {
-    return null
-  }
-  return chunks.slice(0, i + 2).join(Path.sep)
 }
 
 export function isLocal(request: string): boolean {
