@@ -40,7 +40,7 @@ export function fillConfig(config: Object): Config {
     filled.process = defaultManifestProcessor
   }
   if (typeof config.root === 'string') {
-    filled.root = config.root
+    filled.root = Path.normalize(config.root)
   } else {
     filled.root = null
   }

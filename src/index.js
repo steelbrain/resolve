@@ -95,7 +95,7 @@ export async function resolve(givenRequest: string, parent: ?string, config: ?Co
       parent = stack[4].file
     }
   }
-  let request = givenRequest
+  let request = Path.normalize(givenRequest)
   config = fillConfig(config || {})
   if (isLocal(request)) {
     // Convert ./test to $/test
