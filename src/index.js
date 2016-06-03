@@ -38,7 +38,7 @@ async function resolveAsDirectory(request: string, parent: string, config: Confi
   if (stat && mainFile.substr(-1) === '/') {
     // Disallow requiring a file as a directory
     if (!stat.isDirectory()) {
-      throw getError(givenRequest, parent)
+      throw getError(givenRequest, parent, config)
     }
     return await resolveAsDirectory(mainFile, parent, config)
   }
@@ -82,7 +82,7 @@ async function resolveModulePath(request: string, parent: string, config: Config
       }
     }
   }
-  throw getError(request, parent)
+  throw getError(request, parent, config)
 }
 
 export async function resolve(givenRequest: string, parent: ?string, config: ?Config): Promise<string> {
@@ -112,7 +112,7 @@ export async function resolve(givenRequest: string, parent: ?string, config: ?Co
   if (stat && givenRequest.substr(-1) === '/') {
     // Disallow requiring a file as a directory
     if (!stat.isDirectory()) {
-      throw getError(givenRequest, parent)
+      throw getError(givenRequest, parent, config)
     }
     return await resolveAsDirectory(request, parent, config)
   }
@@ -125,7 +125,7 @@ export async function resolve(givenRequest: string, parent: ?string, config: ?Co
     await resolveAsDirectory(request, parent, config, givenRequest)
   )
   if (!resolved) {
-    throw getError(givenRequest, parent)
+    throw getError(givenRequest, parent, config)
   }
   return resolved
 }

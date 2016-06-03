@@ -55,12 +55,14 @@ export function fillConfig(config: Object): Config {
       readFile: fsReadFile
     }
   }
+  filled.items_searched = []
 
   return filled
 }
 
 export async function statItem(path: string, config: Config): Promise<?FS.Stats> {
   try {
+    config.items_searched.push(path)
     return await config.fs.stat(path)
   } catch (_) {
     return null
@@ -79,11 +81,12 @@ export function getChunks(request: string): Array<string> {
   return request.split(REGEX_DIR_SEPARATOR)
 }
 
-export function getError(request: string, parent: string): Error {
+export function getError(request: string, parent: string, config: Config): Error {
   const error = new Error(`Cannot find module '${request}'`)
   // $FlowIgnore: This is our custom property
   error.code = 'MODULE_NOT_FOUND'
   error.stack = `${error.message}\n    at ${parent}:0:0`
+  error.items_searched = config.items_searched
   return error
 }
 
