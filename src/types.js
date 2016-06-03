@@ -9,7 +9,8 @@ export type Config = {
     stat: ((filePath: string) => Promise<FS.Stats>),
     readFile: ((filePath: string) => Promise<string>)
   },
+  root: ?string,
+  process: ((manifest: Object) => string),
   extensions: Array<string>,
-  packageMains: Array<string>,
   moduleDirectories: Array<string>,
 }
