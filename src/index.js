@@ -28,14 +28,15 @@ async function resolveAsDirectory(request: string, parent: string, config: Confi
   try {
     manifest = JSON.parse(await config.fs.readFile(Path.join(request, 'package.json')))
   } catch (_) { /* No Op */ }
-  let givenMainFile = Path.normalize(config.process(manifest, request))
+  let givenMainFile = config.process(manifest, request)
+  givenMainFile = Path.normalize(givenMainFile) + (givenMainFile.substr(0, 1) === '/' ? '/' : '')
   if (givenMainFile === '.' || givenMainFile === '.\\' || givenMainFile === './') {
     givenMainFile = './index'
   }
   let mainFile = Path.isAbsolute(givenMainFile) ? givenMainFile : Path.resolve(request, givenMainFile)
   const stat = await statItem(mainFile, config)
   // $/ should be treated as a dir first
-  if (stat && mainFile.substr(-1) === '/') {
+  if (stat && givenMainFile.substr(-1) === '/') {
     // Disallow requiring a file as a directory
     if (!stat.isDirectory()) {
       throw getError(givenRequest, parent, config)
