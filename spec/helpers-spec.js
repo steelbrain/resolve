@@ -1,6 +1,6 @@
 'use babel'
 
-import { it } from './helpers'
+import { it } from 'jasmine-fix'
 import * as Helpers from '../lib/helpers'
 
 describe('Helpers', function() {
@@ -66,7 +66,7 @@ describe('Helpers', function() {
 
   describe('getError', function() {
     it('returns a proper error', function() {
-      const error = Helpers.getError('test')
+      const error = Helpers.getError('test', 'parent', { items_searched: [] })
       expect(error.code).toBe('MODULE_NOT_FOUND')
       expect(error.message).toBe("Cannot find module 'test'")
     })
