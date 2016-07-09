@@ -24,11 +24,8 @@
   },
   "homepage": "https://github.com/steelbrain/resolve#readme",
   "devDependencies": {
-    "babel-eslint": "^6.0.0",
     "babel-preset-steelbrain": "^2.0.1",
-    "eslint": "^2.5.0",
-    "eslint-config-airbnb": "^6.0.2",
-    "eslint-plugin-react": "^4.2.1",
+    "eslint-config-steelbrain": "^1.0.1",
     "jasmine-fix": "^1.0.0",
     "ucompiler": "^3.1.8",
     "ucompiler-plugin-babel": "^3.1.1"
