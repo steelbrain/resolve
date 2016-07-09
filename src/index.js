@@ -1,13 +1,10 @@
-'use strict'
-
 /* @flow */
 
 import Path from 'path'
+import invariant from 'assert'
 import { capture as captureStack } from 'sb-callsite'
 import { fillConfig, isCore, isLocal, statItem, getError, getChunks, getLocalPackageRoot } from './helpers'
 import type { Config } from './types'
-
-export { isCore, isLocal }
 
 async function resolveAsFile(request: string, config: Config): Promise<?string> {
   // Check existence by adding extensions
@@ -41,16 +38,20 @@ async function resolveAsDirectory(request: string, parent: string, config: Confi
     if (!stat.isDirectory()) {
       throw getError(givenRequest, parent, config)
     }
-    return await resolveAsDirectory(mainFile, parent, config)
+    return await resolveAsDirectory(mainFile, parent, config, givenRequest)
   }
   // Use the request if it's a file and has a valid known extension
   if (stat && stat.isFile() && config.extensions.indexOf(Path.extname(request)) !== -1) {
     return mainFile
   }
-  return (
-    await resolveAsFile(mainFile, config) ||
-    (stat && await resolveAsDirectory(mainFile, parent, config, givenRequest))
-  )
+  const resolvedAsFile = await resolveAsFile(mainFile, config)
+  if (resolvedAsFile) {
+    return resolvedAsFile
+  }
+  if (stat) {
+    return await resolveAsDirectory(mainFile, parent, config, givenRequest)
+  }
+  throw getError(givenRequest, parent, config)
 }
 
 async function resolveModulePath(request: string, parent: string, config: Config): Promise<string> {
@@ -86,7 +87,8 @@ async function resolveModulePath(request: string, parent: string, config: Config
   throw getError(request, parent, config)
 }
 
-export async function resolve(givenRequest: string, parent: ?string, config: ?Config): Promise<string> {
+export async function resolve(givenRequest: string, givenParent: ?string, givenConfig: ?Config): Promise<string> {
+  let parent = givenParent
   if (!parent) {
     const stack = captureStack()
     if (stack[1].file !== __filename) {
@@ -99,8 +101,9 @@ export async function resolve(givenRequest: string, parent: ?string, config: ?Co
       parent = stack[4].file
     }
   }
+  invariant(parent)
   let request = Path.normalize(givenRequest)
-  config = fillConfig(config || {})
+  const config = fillConfig(givenConfig || {})
   if (isLocal(request)) {
     // Convert ./test to $/test
     request = Path.resolve(Path.dirname(parent), request)
@@ -115,7 +118,7 @@ export async function resolve(givenRequest: string, parent: ?string, config: ?Co
     if (!stat.isDirectory()) {
       throw getError(givenRequest, parent, config)
     }
-    return await resolveAsDirectory(request, parent, config)
+    return await resolveAsDirectory(request, parent, config, givenRequest)
   }
   // Use the request if it's a file and has a valid known extension
   if (stat && stat.isFile() && config.extensions.indexOf(Path.extname(request)) !== -1) {
@@ -130,3 +133,5 @@ export async function resolve(givenRequest: string, parent: ?string, config: ?Co
   }
   return resolved
 }
+
+export { isCore, isLocal }

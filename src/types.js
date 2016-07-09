@@ -1,8 +1,8 @@
-'use strict'
-
 /* @flow */
 
 import type FS from 'fs'
+
+/* eslint-disable import/prefer-default-export */
 
 export type Config = {
   fs: {

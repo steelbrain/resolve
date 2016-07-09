@@ -1,5 +1,3 @@
-'use strict'
-
 /* @flow */
 
 import FS from 'fs'
@@ -9,11 +7,12 @@ import type { Config } from './types'
 
 const fsStat = promisify(FS.stat)
 const fsReadFile = promisify(FS.readFile)
+const coreModules = require('../vendor/core.json')
 const REGEX_LOCAL = /^\.[\\\/]?/
 const REGEX_DIR_SEPARATOR = /\/|\\/
-const CORE_MODULES = new Set(require('../vendor/core.json'))
+const CORE_MODULES = new Set(coreModules)
 
-function defaultManifestProcessor(manifest: Object /*, manifestDirectory: string */): string {
+function defaultManifestProcessor(manifest: Object /* , manifestDirectory: string */): string {
   return manifest.main || './index'
 }
 
@@ -47,12 +46,12 @@ export function fillConfig(config: Object): Config {
   if (config.fs && typeof config.fs === 'object') {
     filled.fs = {
       stat: config.fs.stat && typeof config.fs.stat === 'function' ? config.fs.stat : fsStat,
-      readFile: config.fs.readFile && typeof config.fs.readFile === 'function' ? config.fs.readFile : fsReadFile
+      readFile: config.fs.readFile && typeof config.fs.readFile === 'function' ? config.fs.readFile : fsReadFile,
     }
   } else {
     filled.fs = {
       stat: fsStat,
-      readFile: fsReadFile
+      readFile: fsReadFile,
     }
   }
   filled.items_searched = []
