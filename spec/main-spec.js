@@ -33,7 +33,7 @@ describe('sb-resolve', function() {
   it('resolves properly with custom module directories', async function() {
     expect(await resolve('cool_module', getFixturePath('custom-module-dir', 'index.js'), {
       moduleDirectories: ['cool_modules'],
-      root: getFixturePath('custom-module-dir')
+      root: getFixturePath('custom-module-dir'),
     })).toBe(getFixturePath('custom-module-dir', 'cool_modules', 'cool_module', 'index.json'))
   })
   it('resolves with proper priorities, just like node', async function() {
@@ -47,14 +47,14 @@ describe('sb-resolve', function() {
   it('does deep resolution properly', async function() {
     expect(await resolve('cool_module/package.json', getFixturePath('custom-module-dir', 'index.js'), {
       moduleDirectories: ['cool_modules'],
-      root: getFixturePath('custom-module-dir')
+      root: getFixturePath('custom-module-dir'),
     })).toBe(getFixturePath('custom-module-dir', 'cool_modules', 'cool_module', 'package.json'))
   })
   it('supports custom manifest process callback', async function() {
     expect(await resolve(getFixturePath('manifest-process'), __filename, {
       process(manifest) {
         return manifest.coolMain || './index'
-      }
+      },
     })).toBe(getFixturePath('manifest-process', 'real.js'))
   })
 })
