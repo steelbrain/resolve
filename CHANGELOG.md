@@ -1,3 +1,7 @@
+#### 2.0.1
+
+- Bugfixes
+
 #### 2.0.0
 
 - Remove `alias` config support
