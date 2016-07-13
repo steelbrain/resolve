@@ -8,13 +8,10 @@ import type { Config } from './types'
 const fsStat = promisify(FS.stat)
 const fsReadFile = promisify(FS.readFile)
 const coreModules = require('../vendor/core.json')
+
 const REGEX_LOCAL = /^\.[\\\/]?/
 const REGEX_DIR_SEPARATOR = /\/|\\/
 const CORE_MODULES = new Set(coreModules)
-
-function defaultManifestProcessor(manifest: Object /* , manifestDirectory: string */): string {
-  return manifest.main || './index'
-}
 
 export function fillConfig(config: Object): Config {
   const filled = {}
@@ -26,7 +23,7 @@ export function fillConfig(config: Object): Config {
   if (Array.isArray(config.packageMains)) {
     filled.packageMains = config.packageMains
   } else {
-    filled.packageMains = ['browser', 'main']
+    filled.packageMains = ['main']
   }
   if (Array.isArray(config.moduleDirectories)) {
     filled.moduleDirectories = config.moduleDirectories
@@ -36,7 +33,7 @@ export function fillConfig(config: Object): Config {
   if (typeof config.process === 'function') {
     filled.process = config.process
   } else {
-    filled.process = defaultManifestProcessor
+    filled.process = manifest => manifest.main || './index'
   }
   if (typeof config.root === 'string') {
     filled.root = Path.normalize(config.root)
@@ -59,47 +56,22 @@ export function fillConfig(config: Object): Config {
   return filled
 }
 
-export async function statItem(path: string, config: Config): Promise<?FS.Stats> {
-  try {
-    config.items_searched.push(path)
-    return await config.fs.stat(path)
-  } catch (_) {
-    return null
-  }
-}
-
-export function isLocal(request: string): boolean {
+export function isPathLocal(request: string): boolean {
   return REGEX_LOCAL.test(request)
 }
 
-export function isCore(request: string): boolean {
+export function isPathCore(request: string): boolean {
   return CORE_MODULES.has(request)
 }
 
-export function getChunks(request: string): Array<string> {
+export function getChunksOfPath(request: string): Array<string> {
   return request.split(REGEX_DIR_SEPARATOR)
 }
 
-export function getError(request: string, parent: string, config: Config): Error {
+export function getError(request: string, parent: string): Error {
   const error = new Error(`Cannot find module '${request}'`)
   // $FlowIgnore: This is our custom property
   error.code = 'MODULE_NOT_FOUND'
   error.stack = `${error.message}\n    at ${parent}:0:0`
-  error.items_searched = config.items_searched
   return error
-}
-
-export function getLocalPackageRoot(request: string, config: Config): ?string {
-  const chunks = request.split(Path.sep)
-  let i = chunks.length
-  while (--i) {
-    const currentChunk = chunks[i]
-    if (config.moduleDirectories.indexOf(currentChunk) !== -1) {
-      break
-    }
-  }
-  if (i === 0) {
-    return null
-  }
-  return chunks.slice(0, i + 2).join(Path.sep)
 }
