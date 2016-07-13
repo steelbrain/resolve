@@ -1,3 +1,8 @@
+#### 3.0.0
+
+- BREAKING CHANGE: `parentFile` is now a required parameter
+- Fixes and changes throughout the module
+
 #### 2.0.1
 
 - Bugfixes
