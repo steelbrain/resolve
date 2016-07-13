@@ -11,7 +11,7 @@ export type Config = {
   },
   root: ?string,
   process: ((manifest: Object) => string),
-  extensions: Array<string>,
+  extensions: Set<string>,
   moduleDirectories: Array<string>,
   items_searched: Array<string>,
 }

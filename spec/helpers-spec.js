@@ -10,7 +10,7 @@ describe('Helpers', function() {
     it('fills empty config', function() {
       const config = Helpers.fillConfig({})
       expect(config.root).toBe(null)
-      expect(Array.isArray(config.extensions)).toBe(true)
+      expect(config.extensions && config.extensions.constructor.name).toBe('Set')
       expect(Array.isArray(config.packageMains)).toBe(true)
       expect(Array.isArray(config.moduleDirectories)).toBe(true)
       expect(typeof config.process).toBe('function')
@@ -27,40 +27,40 @@ describe('Helpers', function() {
     })
   })
 
-  describe('isLocal', function() {
+  describe('isPathLocal', function() {
     it('returns true for local stuff', function() {
-      expect(Helpers.isLocal('./test')).toBe(true)
-      expect(Helpers.isLocal('./test/test')).toBe(true)
-      expect(Helpers.isLocal('../test/test')).toBe(true)
-      expect(Helpers.isLocal('..')).toBe(true)
-      expect(Helpers.isLocal('.')).toBe(true)
+      expect(Helpers.isPathLocal('./test')).toBe(true)
+      expect(Helpers.isPathLocal('./test/test')).toBe(true)
+      expect(Helpers.isPathLocal('../test/test')).toBe(true)
+      expect(Helpers.isPathLocal('..')).toBe(true)
+      expect(Helpers.isPathLocal('.')).toBe(true)
     })
     it('returns false for non-local stuff', function() {
-      expect(Helpers.isLocal('motion-fs/.')).toBe(false)
-      expect(Helpers.isLocal('motion-fs/package.json')).toBe(false)
-      expect(Helpers.isLocal('motion-fs/../package.json')).toBe(false)
+      expect(Helpers.isPathLocal('motion-fs/.')).toBe(false)
+      expect(Helpers.isPathLocal('motion-fs/package.json')).toBe(false)
+      expect(Helpers.isPathLocal('motion-fs/../package.json')).toBe(false)
     })
   })
 
-  describe('isCore', function() {
+  describe('isPathCore', function() {
     it('returns true for local stuff', function() {
-      expect(Helpers.isCore('fs')).toBe(true)
-      expect(Helpers.isCore('https')).toBe(true)
-      expect(Helpers.isCore('http')).toBe(true)
-      expect(Helpers.isCore('events')).toBe(true)
+      expect(Helpers.isPathCore('fs')).toBe(true)
+      expect(Helpers.isPathCore('https')).toBe(true)
+      expect(Helpers.isPathCore('http')).toBe(true)
+      expect(Helpers.isPathCore('events')).toBe(true)
     })
     it('returns false for non-local stuff', function() {
-      expect(Helpers.isCore('babel')).toBe(false)
-      expect(Helpers.isCore('babel-preset-steelbrain')).toBe(false)
-      expect(Helpers.isCore('eslint-config-steelbrain')).toBe(false)
+      expect(Helpers.isPathCore('babel')).toBe(false)
+      expect(Helpers.isPathCore('babel-preset-steelbrain')).toBe(false)
+      expect(Helpers.isPathCore('eslint-config-steelbrain')).toBe(false)
     })
   })
 
-  describe('getChunks', function() {
+  describe('getChunksOfPath', function() {
     it('returns chunks properly', function() {
-      expect(Helpers.getChunks('node/test')).toEqual(['node', 'test'])
-      expect(Helpers.getChunks('node')).toEqual(['node'])
-      expect(Helpers.getChunks('babel/package.json')).toEqual(['babel', 'package.json'])
+      expect(Helpers.getChunksOfPath('node/test')).toEqual(['node', 'test'])
+      expect(Helpers.getChunksOfPath('node')).toEqual(['node'])
+      expect(Helpers.getChunksOfPath('babel/package.json')).toEqual(['babel', 'package.json'])
     })
   })
 
@@ -72,13 +72,13 @@ describe('Helpers', function() {
     })
   })
 
-  describe('getLocalPackageRoot', function() {
+  describe('getPackageRoot', function() {
     it('returns null or string when the module is a local', function() {
-      expect(Helpers.getLocalPackageRoot('/var/www/lib', defaultConfig)).toBe(null)
-      expect(Helpers.getLocalPackageRoot('/var/www/lib/asd', defaultConfig)).toBe(null)
-      expect(Helpers.getLocalPackageRoot('/var/www/lib/asd/asd', defaultConfig)).toBe(null)
-      expect(Helpers.getLocalPackageRoot('/var/node_modules/asd/lib', defaultConfig)).toBe('/var/node_modules/asd')
-      expect(Helpers.getLocalPackageRoot('/var/node_modules/asd/lib/bin', defaultConfig)).toBe('/var/node_modules/asd')
+      expect(Helpers.getPackageRoot('/var/www/lib', defaultConfig)).toBe(null)
+      expect(Helpers.getPackageRoot('/var/www/lib/asd', defaultConfig)).toBe(null)
+      expect(Helpers.getPackageRoot('/var/www/lib/asd/asd', defaultConfig)).toBe(null)
+      expect(Helpers.getPackageRoot('/var/node_modules/asd/lib', defaultConfig)).toBe('/var/node_modules/asd')
+      expect(Helpers.getPackageRoot('/var/node_modules/asd/lib/bin', defaultConfig)).toBe('/var/node_modules/asd')
     })
   })
 })

@@ -2,31 +2,31 @@
 
 import FS from 'fs'
 import Path from 'path'
+// $FlowIgnore: Stupid ignore doesn't recognize it
 import promisify from 'sb-promisify'
 import type { Config } from './types'
 
 const fsStat = promisify(FS.stat)
 const fsReadFile = promisify(FS.readFile)
 const coreModules = require('../vendor/core.json')
+
 const REGEX_LOCAL = /^\.[\\\/]?/
 const REGEX_DIR_SEPARATOR = /\/|\\/
 const CORE_MODULES = new Set(coreModules)
 
-function defaultManifestProcessor(manifest: Object /* , manifestDirectory: string */): string {
-  return manifest.main || './index'
-}
-
 export function fillConfig(config: Object): Config {
   const filled = {}
-  if (Array.isArray(config.extensions)) {
-    filled.extensions = config.extensions.slice()
+  let extensions
+  if (config.extensions && (Array.isArray(config.extensions) || config.extensions.constructor.name === 'Set')) {
+    extensions = config.extensions
   } else {
-    filled.extensions = ['.js', '.json']
+    extensions = ['.js', '.json']
   }
+  filled.extensions = new Set(extensions)
   if (Array.isArray(config.packageMains)) {
     filled.packageMains = config.packageMains
   } else {
-    filled.packageMains = ['browser', 'main']
+    filled.packageMains = ['main']
   }
   if (Array.isArray(config.moduleDirectories)) {
     filled.moduleDirectories = config.moduleDirectories
@@ -36,7 +36,7 @@ export function fillConfig(config: Object): Config {
   if (typeof config.process === 'function') {
     filled.process = config.process
   } else {
-    filled.process = defaultManifestProcessor
+    filled.process = manifest => manifest.main || './index'
   }
   if (typeof config.root === 'string') {
     filled.root = Path.normalize(config.root)
@@ -59,24 +59,22 @@ export function fillConfig(config: Object): Config {
   return filled
 }
 
-export async function statItem(path: string, config: Config): Promise<?FS.Stats> {
-  try {
-    config.items_searched.push(path)
-    return await config.fs.stat(path)
-  } catch (_) {
+export function statItem(request: string, config: Config): Promise<FS.Stats> {
+  config.items_searched.push(request)
+  return config.fs.stat(request).catch(function() {
     return null
-  }
+  })
 }
 
-export function isLocal(request: string): boolean {
+export function isPathLocal(request: string): boolean {
   return REGEX_LOCAL.test(request)
 }
 
-export function isCore(request: string): boolean {
+export function isPathCore(request: string): boolean {
   return CORE_MODULES.has(request)
 }
 
-export function getChunks(request: string): Array<string> {
+export function getChunksOfPath(request: string): Array<string> {
   return request.split(REGEX_DIR_SEPARATOR)
 }
 
@@ -84,12 +82,13 @@ export function getError(request: string, parent: string, config: Config): Error
   const error = new Error(`Cannot find module '${request}'`)
   // $FlowIgnore: This is our custom property
   error.code = 'MODULE_NOT_FOUND'
-  error.stack = `${error.message}\n    at ${parent}:0:0`
+  // $FlowIgnore: This is our custom property
   error.items_searched = config.items_searched
+  error.stack = `${error.message}\n    at ${parent}:0:0`
   return error
 }
 
-export function getLocalPackageRoot(request: string, config: Config): ?string {
+export function getPackageRoot(request: string, config: Config): ?string {
   const chunks = request.split(Path.sep)
   let i = chunks.length
   while (--i) {
