@@ -24,9 +24,11 @@ async function resolveAsDirectory(directory: string, parent: string, config: Con
   } catch (_) { /* No Op */ }
 
   let mainFile = config.process(manifest, directory) || './index'
-  mainFile = Path.normalize(mainFile) + (mainFile.substr(-1) === '/' ? '/' : '')
+  let pathIsDirectory = mainFile.substr(-1) === '/'
+  mainFile = Path.normalize(mainFile)
   if (mainFile === '.' || mainFile === '.\\' || mainFile === './') {
     mainFile = './index'
+    pathIsDirectory = false
   }
   if (!Path.isAbsolute(mainFile)) {
     mainFile = Path.resolve(directory, mainFile)
@@ -34,9 +36,9 @@ async function resolveAsDirectory(directory: string, parent: string, config: Con
 
   const stat = await Helpers.statItem(mainFile, config)
   // $/ should be treated as a dir first
-  if (stat && mainFile.substr(-1) === '/') {
+  if (pathIsDirectory) {
     // Disallow requiring a file as a directory
-    return stat.isDirectory() ? await resolveAsDirectory(mainFile, parent, config) : null
+    return stat && stat.isDirectory() ? await resolveAsDirectory(mainFile, parent, config) : null
   }
   // Use the request if it's a file and has a valid known extension
   if (stat && stat.isFile() && config.extensions.has(Path.extname(mainFile))) {

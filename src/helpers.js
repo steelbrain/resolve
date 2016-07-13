@@ -77,10 +77,12 @@ export function getChunksOfPath(request: string): Array<string> {
   return request.split(REGEX_DIR_SEPARATOR)
 }
 
-export function getError(request: string, parent: string): Error {
+export function getError(request: string, parent: string, config: Config): Error {
   const error = new Error(`Cannot find module '${request}'`)
   // $FlowIgnore: This is our custom property
   error.code = 'MODULE_NOT_FOUND'
+  // $FlowIgnore: This is our custom property
+  error.items_searched = config.items_searched
   error.stack = `${error.message}\n    at ${parent}:0:0`
   return error
 }
