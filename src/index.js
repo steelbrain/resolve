@@ -57,14 +57,14 @@ async function resolveAsDirectory(request: string, parent: string, config: Confi
 async function resolveModulePath(request: string, parent: string, config: Config): Promise<string> {
   const chunks = getChunks(request)
   const moduleName = chunks.shift()
-  const packageRoots = []
+  const packageRoots = new Set()
 
   const localRoot = getLocalPackageRoot(Path.dirname(parent), config)
   if (localRoot) {
-    packageRoots.push(localRoot)
+    packageRoots.add(localRoot)
   }
   if (typeof config.root === 'string') {
-    packageRoots.push(config.root)
+    packageRoots.add(config.root)
   }
 
   const absoluteModuleDirectories = config.moduleDirectories.filter(i => Path.isAbsolute(i))
