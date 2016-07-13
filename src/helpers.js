@@ -60,6 +60,7 @@ export function fillConfig(config: Object): Config {
 }
 
 export function statItem(request: string, config: Config): Promise<FS.Stats> {
+  config.items_searched.push(request)
   return config.fs.stat(request).catch(function() {
     return null
   })
