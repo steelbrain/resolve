@@ -33,7 +33,7 @@ type $Options = {
 
 function isLocal(request: string): boolean
 function isCore(request: string): boolean
-function resolve(request: string, requestDirectory: string, options: $Options): Promise<string>
+function resolve(request: string, requestFile: string, options: $Options): Promise<string>
 
 export { isLocal, isCore, resolve }
 ```
