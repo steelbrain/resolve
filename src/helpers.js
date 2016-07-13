@@ -2,6 +2,7 @@
 
 import FS from 'fs'
 import Path from 'path'
+// $FlowIgnore: Stupid ignore doesn't recognize it
 import promisify from 'sb-promisify'
 import type { Config } from './types'
 
@@ -15,11 +16,13 @@ const CORE_MODULES = new Set(coreModules)
 
 export function fillConfig(config: Object): Config {
   const filled = {}
-  if (Array.isArray(config.extensions)) {
-    filled.extensions = config.extensions.slice()
+  let extensions
+  if (config.extensions && (Array.isArray(config.extensions) || config.extensions.constructor.name === 'Set')) {
+    extensions = config.extensions
   } else {
-    filled.extensions = ['.js', '.json']
+    extensions = ['.js', '.json']
   }
+  filled.extensions = new Set(extensions)
   if (Array.isArray(config.packageMains)) {
     filled.packageMains = config.packageMains
   } else {
@@ -56,6 +59,12 @@ export function fillConfig(config: Object): Config {
   return filled
 }
 
+export function statItem(request: string, config: Config): Promise<FS.Stats> {
+  return config.fs.stat(request).catch(function() {
+    return null
+  })
+}
+
 export function isPathLocal(request: string): boolean {
   return REGEX_LOCAL.test(request)
 }
@@ -74,4 +83,19 @@ export function getError(request: string, parent: string): Error {
   error.code = 'MODULE_NOT_FOUND'
   error.stack = `${error.message}\n    at ${parent}:0:0`
   return error
+}
+
+export function getPackageRoot(request: string, config: Config): ?string {
+  const chunks = request.split(Path.sep)
+  let i = chunks.length
+  while (--i) {
+    const currentChunk = chunks[i]
+    if (config.moduleDirectories.indexOf(currentChunk) !== -1) {
+      break
+    }
+  }
+  if (i === 0) {
+    return null
+  }
+  return chunks.slice(0, i + 2).join(Path.sep)
 }
