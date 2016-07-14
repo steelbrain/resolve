@@ -46,7 +46,7 @@ async function resolveAsDirectory(directory: string, parent: string, config: Con
   }
   return (
     await resolveAsFile(mainFile, config) ||
-    await resolveAsDirectory(mainFile, parent, config) ||
+    (stat && await resolveAsDirectory(mainFile, parent, config)) ||
     null
   )
 }
@@ -113,7 +113,7 @@ async function resolve(givenRequest: string, parent: string, givenConfig: ?Confi
   }
   const resolved = (
     await resolveAsFile(request, config) ||
-    await resolveAsDirectory(request, parent, config, givenRequest)
+    (stat && await resolveAsDirectory(request, parent, config, givenRequest))
   )
   if (resolved) {
     return resolved
