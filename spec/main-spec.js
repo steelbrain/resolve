@@ -57,4 +57,7 @@ describe('sb-resolve', function() {
       },
     })).toBe(getFixturePath('manifest-process', 'real.js'))
   })
+  it('resolves relative stuff properly', async function() {
+    expect(await resolve('./helpers-spec', __filename)).toBe(Path.join(__dirname, 'helpers-spec.js'))
+  })
 })
