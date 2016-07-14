@@ -1,3 +1,8 @@
+#### 3.0.1
+
+- Fix an infinite loop scenario (facepalm)
+- Fix relative imports once and for all
+
 #### 3.0.0
 
 - BREAKING CHANGE: `parentFile` is now a required parameter
