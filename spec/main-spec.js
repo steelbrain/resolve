@@ -51,7 +51,7 @@ describe('sb-resolve', function() {
     })).toBe(getFixturePath('custom-module-dir', 'cool_modules', 'cool_module', 'package.json'))
   })
   it('supports custom manifest process callback', async function() {
-    expect(await resolve(getFixturePath('manifest-process'), __filename, {
+    expect(await resolve('./fixtures/manifest-process', __filename, {
       process(manifest) {
         return manifest.coolMain || './index'
       },
@@ -59,5 +59,8 @@ describe('sb-resolve', function() {
   })
   it('resolves relative stuff properly', async function() {
     expect(await resolve('./helpers-spec', __filename)).toBe(Path.join(__dirname, 'helpers-spec.js'))
+  })
+  it('resolves even if the module has dot in name and is a directory', async function() {
+    expect(await resolve('./fixtures/dot.dot', __filename)).toBe(getFixturePath('dot.dot/index.js'))
   })
 })
