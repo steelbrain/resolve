@@ -1,3 +1,7 @@
+#### 3.0.2
+
+- Fix for directories with dots in name
+
 #### 3.0.1
 
 - Fix an infinite loop scenario (facepalm)
