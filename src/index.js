@@ -5,7 +5,8 @@ import * as Helpers from './helpers'
 import type { Config } from './types'
 
 async function resolveAsFile(filePath: string, config: Config): Promise<?string> {
-  if (config.extensions.has(Path.extname(filePath)) && await Helpers.statItem(filePath, config)) {
+  const stat = await Helpers.statItem(filePath, config)
+  if (config.extensions.has(Path.extname(filePath)) && stat && stat.isFile()) {
     return filePath
   }
   for (const extension of config.extensions) {
