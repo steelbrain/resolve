@@ -11,7 +11,8 @@ async function resolveAsFile(filePath: string, config: Config): Promise<?string>
   }
   for (const extension of config.extensions) {
     const newPath = filePath + extension
-    if (await Helpers.statItem(newPath, config)) {
+    const fileStat = await Helpers.statItem(newPath, config)
+    if (fileStat && fileStat.isFile()) {
       return newPath
     }
   }
@@ -70,14 +71,16 @@ async function resolveModulePath(request: string, parent: string, config: Config
 
   for (const moduleDirectory of absoluteModuleDirectories) {
     const path = Path.join(moduleDirectory, moduleName)
-    if (await Helpers.statItem(path, config)) {
+    const dirStat = await Helpers.statItem(path, config)
+    if (dirStat && dirStat.isDirectory()) {
       return Path.join(path, chunks.join(''))
     }
   }
   for (const root of packageRoots) {
     for (const moduleDirectory of relativeModuleDirectories) {
       const path = Path.join(root, moduleDirectory, moduleName)
-      if (await Helpers.statItem(path, config)) {
+      const dirStat = await Helpers.statItem(path, config)
+      if (dirStat && dirStat.isDirectory()) {
         return Path.join(path, chunks.join(''))
       }
     }

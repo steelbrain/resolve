@@ -63,4 +63,7 @@ describe('sb-resolve', function() {
   it('resolves even if the module has dot in name and is a directory', async function() {
     expect(await resolve('./fixtures/dot.dot', __filename)).toBe(getFixturePath('dot.dot/index.js'))
   })
+  it('resolves the file in favor of dir even when it has an ext', async function() {
+    expect(await resolve('./fixtures/dir-has-ext/test', __filename)).toBe(getFixturePath('dir-has-ext/test.json'))
+  })
 })

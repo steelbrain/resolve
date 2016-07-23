@@ -1,3 +1,7 @@
+#### 3.0.3
+
+- Fix for directories who have the right node modules
+
 #### 3.0.2
 
 - Fix for directories with dots in name
