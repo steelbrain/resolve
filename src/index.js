@@ -73,7 +73,7 @@ async function resolveModulePath(request: string, parent: string, config: Config
     const path = Path.join(moduleDirectory, moduleName)
     const dirStat = await Helpers.statItem(path, config)
     if (dirStat && dirStat.isDirectory()) {
-      return Path.join(path, chunks.join(''))
+      return Path.join(path, chunks.join(Path.sep))
     }
   }
   for (const root of packageRoots) {
@@ -81,7 +81,7 @@ async function resolveModulePath(request: string, parent: string, config: Config
       const path = Path.join(root, moduleDirectory, moduleName)
       const dirStat = await Helpers.statItem(path, config)
       if (dirStat && dirStat.isDirectory()) {
-        return Path.join(path, chunks.join(''))
+        return Path.join(path, chunks.join(Path.sep))
       }
     }
   }

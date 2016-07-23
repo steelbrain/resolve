@@ -1,3 +1,7 @@
+#### 3.0.4
+
+- Fix for joining of deep module requests
+
 #### 3.0.3
 
 - Fix for directories who have the right node modules

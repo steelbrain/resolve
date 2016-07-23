@@ -66,4 +66,9 @@ describe('sb-resolve', function() {
   it('resolves the file in favor of dir even when it has an ext', async function() {
     expect(await resolve('./fixtures/dir-has-ext/test', __filename)).toBe(getFixturePath('dir-has-ext/test.json'))
   })
+  it('scans module directories properly', async function() {
+    expect(await resolve('test/test', __filename, {
+      moduleDirectories: [Path.join(__dirname, 'fixtures')],
+    })).toBe(getFixturePath('test', 'test.json'))
+  })
 })
