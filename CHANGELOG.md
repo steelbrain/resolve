@@ -1,3 +1,7 @@
+#### 3.0.5
+
+- Add `manifestPath` to `process` callback
+
 #### 3.0.4
 
 - Fix for joining of deep module requests

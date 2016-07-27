@@ -22,7 +22,9 @@ async function resolveAsFile(filePath: string, config: Config): Promise<?string>
 async function resolveAsDirectory(directory: string, parent: string, config: Config): Promise<?string> {
   let manifest = {}
   try {
-    manifest = JSON.parse(await config.fs.readFile(Path.join(directory, 'package.json')))
+    const manifestPath = Path.join(directory, 'package.json')
+    manifest = JSON.parse(await config.fs.readFile(manifestPath))
+    manifest.manifestPath = manifestPath
   } catch (_) { /* No Op */ }
 
   let mainFile = config.process(manifest, directory) || './index'
