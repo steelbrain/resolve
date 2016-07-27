@@ -1,6 +1,6 @@
 {
   "name": "sb-resolve",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "require.resolve algorithm implemented with awesome features",
   "main": "lib/index.js",
   "scripts": {
