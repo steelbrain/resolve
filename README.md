@@ -1,5 +1,7 @@
 # Resolve
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/steelbrain/resolve.svg)](https://greenkeeper.io/)
+
 `sb-resolve` is a node module that supports `require.resolve`'s lookup algorithm but with advance configurations.
 
 ## Installation
