@@ -25,12 +25,12 @@
   "homepage": "https://github.com/steelbrain/resolve#readme",
   "devDependencies": {
     "babel-preset-steelbrain": "^5.0.0",
-    "eslint-config-steelbrain": "^1.0.1",
+    "eslint-config-steelbrain": "^2.0.0",
     "jasmine-fix": "^1.0.0",
     "ucompiler": "^3.1.8",
     "ucompiler-plugin-babel": "^3.1.1"
   },
   "dependencies": {
-    "sb-promisify": "^1.3.0"
+    "sb-promisify": "^2.0.1"
   }
 }
