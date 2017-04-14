@@ -10,7 +10,7 @@ const fsStat = promisify(FS.stat)
 const fsReadFile = promisify(FS.readFile)
 const coreModules = require('../vendor/core.json')
 
-const REGEX_LOCAL = /^\.[\\\/]?/
+const REGEX_LOCAL = /^\.[\\/]?/
 const REGEX_DIR_SEPARATOR = /\/|\\/
 const CORE_MODULES = new Set(coreModules)
 

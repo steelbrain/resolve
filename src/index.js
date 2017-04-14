@@ -42,7 +42,7 @@ async function resolveAsDirectory(directory: string, parent: string, config: Con
   // $/ should be treated as a dir first
   if (pathIsDirectory) {
     // Disallow requiring a file as a directory
-    return stat && stat.isDirectory() ? await resolveAsDirectory(mainFile, parent, config) : null
+    return stat && stat.isDirectory() ? resolveAsDirectory(mainFile, parent, config) : null
   }
   // Use the request if it's a file and has a valid known extension
   if (stat && stat.isFile() && config.extensions.has(Path.extname(mainFile))) {
